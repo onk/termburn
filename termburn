@@ -115,11 +115,39 @@ def main
   COLORS.each { |color| Curses.init_pair(color, color, color) }
 
   terminal = generate_array
-  loop {
-    inner_main_loop(terminal)
-  }
+  if ENV["BENCHMARK"]
+    require "rblineprof"
+    profile = lineprof(/./) do
+      sleep 0.001
+      inner_main_loop(terminal)
+    end
+  else
+    loop {
+      inner_main_loop(terminal)
+    }
+  end
 ensure
   Curses.close_screen
+
+  if ENV["BENCHMARK"]
+    file = profile.keys.first
+
+    File.readlines(file).each_with_index do |line, num|
+      wall, cpu, calls, allocations = profile[file][num + 1]
+
+      if wall > 0 || cpu > 0 || calls > 0
+        printf(
+          "% 5.1fms + % 6.1fms (% 4d) | %s",
+          cpu / 1000.0,
+          (wall - cpu) / 1000.0,
+          calls,
+          line
+        )
+      else
+        printf "                          | %s", line
+      end
+    end
+  end
 end
 
 main
