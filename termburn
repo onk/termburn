@@ -57,14 +57,16 @@ def update_array(terminal)
   last_row = terminal[-1]
   next_row = terminal[-2]
   next_row.fill { |i|
-    case i
-    when 0
-      (last_row[i] + last_row[i+1]) / 2
-    when window_width - 1
-      (last_row[i-1] + last_row[i]) / 2
-    else
-      (last_row[i-1] + last_row[i] + last_row[i+1]) / 3
-    end
+    v = case i
+        when 0
+          (last_row[i] + last_row[i+1]) / 2
+        when window_width - 1
+          (last_row[i-1] + last_row[i]) / 2
+        else
+          (last_row[i-1] + last_row[i] + last_row[i+1]) / 3
+        end
+    # ノイズを足します
+    (v + rand(-3..3)).clamp(0, 99)
   }
 
   # さら上の段に下4個の平均を入れます
@@ -73,14 +75,16 @@ def update_array(terminal)
     row_1 = terminal[window_height - (2 + i)]
     row_2 = terminal[window_height - (1 + i)]
     row.fill { |j|
-      case j
-      when 0
-        (row_1[j] + row_1[j+1] + row_2[j]) / 3
-      when window_width - 1
-        (row_1[j-1] + row_1[j] + row_2[j]) / 3
-      else
-        (row_1[j-1] + row_1[j] + row_1[j+1] + row_2[j]) / 4
-      end
+      v = case j
+          when 0
+            (row_1[j] + row_1[j+1] + row_2[j]) / 3
+          when window_width - 1
+            (row_1[j-1] + row_1[j] + row_2[j]) / 3
+          else
+            (row_1[j-1] + row_1[j] + row_1[j+1] + row_2[j]) / 4
+          end
+      # ノイズを足します
+      (v + rand(-3..3)).clamp(0, 99)
     }
   end
   terminal
