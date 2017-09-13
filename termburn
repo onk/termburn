@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+require "io/console"
 
 # 下段にランダムに数字を入れます
 # 上の段に下3個の平均を入れます
@@ -9,6 +10,13 @@
 # もっと細かくします
 # ノイズを足します
 def main
+  window_height, window_width = IO.console.winsize # [height, width]
+  terminal = Array.new(window_height) { Array.new(window_width) }
+
+  # 下段にランダムに数字を入れます
+  last_row = terminal[-1]
+  last_row.fill { rand(100) }
+  p terminal[-1]
 end
 
 main
