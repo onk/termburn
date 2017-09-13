@@ -45,8 +45,8 @@
                           | def update_last_row(terminal)
                           |   # 下段の数字を変えます
                           |   last_row = terminal[-1]
- 51.0ms +   42.3ms ( 100) |   last_row.fill { |i|
- 40.8ms +   35.4ms ( 69940) |     (last_row[i] + rand(-2..2)).clamp(0, 99)
+ 52.2ms +   42.3ms ( 100) |   last_row.fill { |i|
+ 41.9ms +   35.4ms ( 70031) |     (last_row[i] + rand(-2..2)).clamp(0, 99)
                           |   }
                           |   terminal
                           | end
@@ -58,57 +58,57 @@
                           |   # 上の段に下3個の平均を入れます
                           |   last_row = terminal[-1]
                           |   next_row = terminal[-2]
- 60.6ms +   48.0ms ( 100) |   next_row.fill { |i|
+ 29.7ms +   20.9ms ( 100) |   next_row.fill { |i|
                           |     v = case i
-  4.0ms +    3.4ms ( 11700) |         when 0
+  4.1ms +    3.5ms ( 11700) |         when 0
                           |           (last_row[i] + last_row[i+1]) / 2
-  3.9ms +    3.5ms ( 11600) |         when window_width - 1
+  4.1ms +    3.3ms ( 11600) |         when window_width - 1
                           |           (last_row[i-1] + last_row[i]) / 2
                           |         else
                           |           (last_row[i-1] + last_row[i] + last_row[i+1]) / 3
                           |         end
                           |     # ノイズを足します
-  4.1ms +    3.4ms ( 11700) |     noise = NOISE_ARRAY.sample
+  4.3ms +    3.5ms ( 11700) |     noise = NOISE_ARRAY.sample
                           |     v = v + noise
- 28.5ms +   24.0ms ( 46799) |     v.clamp(0, 99)
+                          |     [99, [0, v].max].min
                           |   }
                           | 
                           |   # さら上の段に下4個の平均を入れます
- 1510.5ms +  1186.0ms ( 100) |   (window_height - 2).times do |i|
+ 743.9ms +  525.3ms ( 100) |   (window_height - 2).times do |i|
                           |     row = terminal[window_height - (3 + i)]
                           |     row_1 = terminal[window_height - (2 + i)]
                           |     row_2 = terminal[window_height - (1 + i)]
- 1508.6ms +  1185.2ms ( 2500) |     row.fill { |j|
+ 742.1ms +  524.4ms ( 2500) |     row.fill { |j|
                           |       v = case j
- 100.0ms +   85.0ms ( 292500) |           when 0
+ 103.2ms +   88.3ms ( 292500) |           when 0
                           |             (row_1[j] + row_1[j+1] + row_2[j]) / 3
- 99.4ms +   84.4ms ( 290000) |           when window_width - 1
+ 103.9ms +   88.2ms ( 290000) |           when window_width - 1
                           |             (row_1[j-1] + row_1[j] + row_2[j]) / 3
                           |           else
                           |             (row_1[j-1] + row_1[j] + row_1[j+1] + row_2[j]) / 4
                           |           end
                           |       # ノイズを足します
- 101.7ms +   85.2ms ( 292500) |       noise = NOISE_ARRAY.sample
+ 107.2ms +   85.9ms ( 292500) |       noise = NOISE_ARRAY.sample
                           |       v = v + noise
- 712.7ms +  593.2ms ( 1170000) |       v.clamp(0, 99)
+                          |       [99, [0, v].max].min
                           |     }
                           |   end
                           |   terminal
                           | end
                           | 
                           | def inner_main_loop(terminal)
- 51.1ms +   42.4ms ( 100) |   terminal = update_last_row(terminal)
- 1571.2ms +  1234.1ms ( 100) |   terminal = update_array(terminal)
- 729.2ms +  530.1ms ( 200) |   terminal.each_with_index { |row, i|
+ 52.3ms +   42.4ms ( 100) |   terminal = update_last_row(terminal)
+ 773.7ms +  546.2ms ( 100) |   terminal = update_array(terminal)
+ 799.1ms +  544.4ms ( 200) |   terminal.each_with_index { |row, i|
                           |     break if i == terminal.length - 1 # 最終行はスキップ
- 727.0ms +  529.2ms ( 2600) |     row.each { |cell|
- 483.5ms +  351.3ms ( 608400) |       Curses.attron(Curses.color_pair(COLOR_HASH[cell])) {
- 132.4ms +   88.6ms ( 304200) |         Curses.addstr(STRING)
+ 796.8ms +  543.4ms ( 2600) |     row.each { |cell|
+ 534.0ms +  362.9ms ( 608400) |       Curses.attron(Curses.color_pair(COLOR_HASH[cell])) {
+ 148.0ms +   91.0ms ( 304200) |         Curses.addstr(STRING)
                           |       }
                           |     }
                           |   }
- 351.2ms +   11.8ms ( 100) |   Curses.refresh
-  0.6ms +    0.0ms ( 100) |   sleep 0.15 unless ENV["BENCHMARK"]
+ 384.9ms +   13.1ms ( 100) |   Curses.refresh
+  0.5ms +    0.0ms ( 100) |   sleep 0.15 unless ENV["BENCHMARK"]
   1.1ms +    0.0ms ( 100) |   Curses.clear
                           | end
                           | 
@@ -124,8 +124,8 @@
                           |     require "rblineprof"
                           |     profile = lineprof(/./) do
   0.1ms +    1.4ms (   1) |       sleep 0.001
- 2705.3ms +  1818.7ms (   1) |       100.times {
- 2705.1ms +  1818.7ms ( 100) |         inner_main_loop(terminal)
+ 2012.5ms +  1146.4ms (   1) |       100.times {
+ 2012.3ms +  1146.4ms ( 100) |         inner_main_loop(terminal)
                           |       }
                           |     end
                           |   else
@@ -159,4 +159,4 @@
                           | end
                           | 
                           | main
-4.5315258502960205
+3.1636857986450195

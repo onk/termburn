@@ -71,7 +71,7 @@ def update_array(terminal)
     # ノイズを足します
     noise = NOISE_ARRAY.sample
     v = v + noise
-    v.clamp(0, 99)
+    [99, [0, v].max].min
   }
 
   # さら上の段に下4個の平均を入れます
@@ -91,7 +91,7 @@ def update_array(terminal)
       # ノイズを足します
       noise = NOISE_ARRAY.sample
       v = v + noise
-      v.clamp(0, 99)
+      [99, [0, v].max].min
     }
   end
   terminal
