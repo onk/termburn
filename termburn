@@ -2,6 +2,22 @@
 require "io/console"
 require "curses"
 
+COLORS = [
+  16,  # 0,0,0
+  52,  # 1,0,0
+  88,  # 2,0,0
+  124, # 3,0,0
+  160, # 4,0,0
+  196, # 5,0,0
+  202, # 5,1,0
+  208, # 5,2,0
+  214, # 5,3,0
+  220, # 5,4,0
+  226, # 5,5,0
+  231, # 5,5,5
+]
+STRING = " "
+
 # 下段にランダムに数字を入れます
 # 上の段に下3個の平均を入れます
 # さら上の段に下4個の平均を入れます
@@ -72,23 +88,9 @@ end
 
 def colorize(terminal)
   # 数字によって色づけをします
-  colors = [
-    16,  # 0,0,0
-    52,  # 1,0,0
-    88,  # 2,0,0
-    124, # 3,0,0
-    160, # 4,0,0
-    196, # 5,0,0
-    202, # 5,1,0
-    208, # 5,2,0
-    214, # 5,3,0
-    220, # 5,4,0
-    226, # 5,5,0
-    231, # 5,5,5
-  ]
   terminal.map { |row|
     row.map { |cell|
-      colors[(cell / (100.0 / colors.length)).to_i]
+      COLORS[(cell / (100.0 / COLORS.length)).to_i]
     }
   }
 end
@@ -97,9 +99,7 @@ def main
   Curses.init_screen
   Curses.start_color
 
-  colors = [16, 52, 88, 124, 160, 196, 202, 208, 214, 220, 226, 231]
-  string = " "
-  colors.each { |color| Curses.init_pair(color, color, color) }
+  COLORS.each { |color| Curses.init_pair(color, color, color) }
 
   terminal = generate_array
   loop {
@@ -109,7 +109,7 @@ def main
     colorized_terminal.each { |row|
       row.each { |cell|
         Curses.attron(Curses.color_pair(cell)) {
-          Curses.addstr(string)
+          Curses.addstr(STRING)
         }
       }
     }
