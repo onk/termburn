@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require "io/console"
+require "curses"
 
 # 下段にランダムに数字を入れます
 # 上の段に下3個の平均を入れます
@@ -85,25 +86,39 @@ def colorize(terminal)
     226, # 5,5,0
     231, # 5,5,5
   ]
-  str = " "
   terminal.map { |row|
     row.map { |cell|
-      color = colors[(cell / (100.0 / colors.length)).to_i]
-      "\e[48;5;#{color}m#{str}\e[0m"
-    }.join
-  }.join("\n")
+      colors[(cell / (100.0 / colors.length)).to_i]
+    }
+  }
 end
 
 def main
+  Curses.init_screen
+  Curses.start_color
+
+  colors = [16, 52, 88, 124, 160, 196, 202, 208, 214, 220, 226, 231]
+  string = " "
+  colors.each { |color| Curses.init_pair(color, color, color) }
+
   terminal = generate_array
   loop {
     terminal = update_last_row(terminal)
     terminal = update_array(terminal)
-    string = colorize(terminal)
-    puts string
+    colorized_terminal = colorize(terminal)
+    colorized_terminal.each { |row|
+      row.each { |cell|
+        Curses.attron(Curses.color_pair(cell)) {
+          Curses.addstr(string)
+        }
+      }
+    }
+    Curses.refresh
     sleep 0.5
-    puts "\e[H\e[2J"
+    Curses.clear
   }
+ensure
+  Curses.close_screen
 end
 
 main
