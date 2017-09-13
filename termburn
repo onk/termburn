@@ -10,6 +10,8 @@ require "io/console"
 # もっと細かくします
 # ノイズを足します
 def main
+  Kernel.srand ARGV[0].to_i if ARGV[0]
+
   window_height, window_width = IO.console.winsize # [height, width]
   terminal = Array.new(window_height) { Array.new(window_width) }
 
