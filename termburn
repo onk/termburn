@@ -120,7 +120,7 @@ def main
       }
     }
     Curses.refresh
-    sleep 0.5
+    sleep 0.15
     Curses.clear
   }
 ensure
