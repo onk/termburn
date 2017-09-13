@@ -16,6 +16,7 @@ COLORS = [
   226, # 5,5,0
   231, # 5,5,5
 ]
+COLOR_HASH = (0..99).map {|c| [c, COLORS[(c / (100.0 / COLORS.length)).to_i]] }.to_h
 STRING = " "
 
 # 下段にランダムに数字を入れます
@@ -91,15 +92,6 @@ def update_array(terminal)
   terminal
 end
 
-def colorize(terminal)
-  # 数字によって色づけをします
-  terminal.map { |row|
-    row.map { |cell|
-      COLORS[(cell / (100.0 / COLORS.length)).to_i]
-    }
-  }
-end
-
 def main
   Curses.init_screen
   Curses.start_color
@@ -110,11 +102,10 @@ def main
   loop {
     terminal = update_last_row(terminal)
     terminal = update_array(terminal)
-    colorized_terminal = colorize(terminal)
-    colorized_terminal.each_with_index { |row, i|
+    terminal.each_with_index { |row, i|
       break if i == terminal.length - 1 # 最終行はスキップ
       row.each { |cell|
-        Curses.attron(Curses.color_pair(cell)) {
+        Curses.attron(Curses.color_pair(COLOR_HASH[cell])) {
           Curses.addstr(STRING)
         }
       }
