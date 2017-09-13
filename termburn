@@ -109,11 +109,12 @@ def inner_main_loop(terminal)
     }
   }
   Curses.refresh
-  sleep 0.15
+  sleep 0.15 unless ENV["BENCHMARK"]
   Curses.clear
 end
 
 def main
+  start_at = Time.now.to_f
   Curses.init_screen
   Curses.start_color
 
@@ -124,7 +125,9 @@ def main
     require "rblineprof"
     profile = lineprof(/./) do
       sleep 0.001
-      inner_main_loop(terminal)
+      100.times {
+        inner_main_loop(terminal)
+      }
     end
   else
     loop {
@@ -153,6 +156,7 @@ ensure
       end
     end
   end
+  puts Time.now.to_f - start_at
 end
 
 main
