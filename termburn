@@ -31,7 +31,24 @@ def main
       (last_row[i-1] + last_row[i] + last_row[i+1]) / 3
     end
   }
-  p next_row
+
+  # さら上の段に下4個の平均を入れます
+  (window_height - 2).times do |i|
+    row = terminal[window_height - (3 + i)]
+    row_1 = terminal[window_height - (2 + i)]
+    row_2 = terminal[window_height - (1 + i)]
+    row.fill { |j|
+      case j
+      when 0
+        (row_1[j] + row_1[j+1] + row_2[j]) / 3
+      when window_width - 1
+        (row_1[j-1] + row_1[j] + row_2[j]) / 3
+      else
+        (row_1[j-1] + row_1[j] + row_1[j+1] + row_2[j]) / 4
+      end
+    }
+  end
+  p terminal[0]
 end
 
 main
