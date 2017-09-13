@@ -18,6 +18,7 @@ COLORS = [
 ]
 COLOR_HASH = (0..99).map {|c| [c, COLORS[(c / (100.0 / COLORS.length)).to_i]] }.to_h
 STRING = " "
+NOISE_ARRAY = (-3..3).to_a
 
 # 下段にランダムに数字を入れます
 # 上の段に下3個の平均を入れます
@@ -68,7 +69,9 @@ def update_array(terminal)
           (last_row[i-1] + last_row[i] + last_row[i+1]) / 3
         end
     # ノイズを足します
-    (v + rand(-3..3)).clamp(0, 99)
+    noise = NOISE_ARRAY.sample
+    v = v + noise
+    v.clamp(0, 99)
   }
 
   # さら上の段に下4個の平均を入れます
@@ -86,7 +89,9 @@ def update_array(terminal)
             (row_1[j-1] + row_1[j] + row_1[j+1] + row_2[j]) / 4
           end
       # ノイズを足します
-      (v + rand(-3..3)).clamp(0, 99)
+      noise = NOISE_ARRAY.sample
+      v = v + noise
+      v.clamp(0, 99)
     }
   end
   terminal
