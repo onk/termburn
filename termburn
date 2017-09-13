@@ -23,6 +23,15 @@ def generate_array
   terminal
 end
 
+def update_last_row(terminal)
+  # 下段の数字を変えます
+  last_row = terminal[-1]
+  last_row.fill { |i|
+    (last_row[i] + rand(-2..2)).clamp(0, 100)
+  }
+  terminal
+end
+
 def update_array(terminal)
   window_height = terminal.length
   window_width  = terminal[0].length
@@ -87,9 +96,14 @@ end
 
 def main
   terminal = generate_array
-  terminal = update_array(terminal)
-  string = colorize(terminal)
-  puts string
+  loop {
+    terminal = update_last_row(terminal)
+    terminal = update_array(terminal)
+    string = colorize(terminal)
+    puts string
+    sleep 0.5
+    puts "\e[H\e[2J"
+  }
 end
 
 main
