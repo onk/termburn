@@ -27,7 +27,7 @@ def update_last_row(terminal)
   # 下段の数字を変えます
   last_row = terminal[-1]
   last_row.fill { |i|
-    (last_row[i] + rand(-2..2)).clamp(0, 100)
+    (last_row[i] + rand(-2..2)).clamp(0, 99)
   }
   terminal
 end
