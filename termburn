@@ -9,7 +9,8 @@ require "io/console"
 # 細かくします
 # もっと細かくします
 # ノイズを足します
-def main
+
+def generate_array
   Kernel.srand ARGV[0].to_i if ARGV[0]
 
   window_height, window_width = IO.console.winsize # [height, width]
@@ -19,7 +20,15 @@ def main
   last_row = terminal[-1]
   last_row.fill { rand(100) }
 
+  terminal
+end
+
+def update_array(terminal)
+  window_height = terminal.length
+  window_width  = terminal[0].length
+
   # 上の段に下3個の平均を入れます
+  last_row = terminal[-1]
   next_row = terminal[-2]
   next_row.fill { |i|
     case i
@@ -48,7 +57,10 @@ def main
       end
     }
   end
+  terminal
+end
 
+def colorize(terminal)
   # 数字によって色づけをします
   colors = [
     16,  # 0,0,0
@@ -65,12 +77,18 @@ def main
     231, # 5,5,5
   ]
   str = " "
-  string = terminal.map { |row|
-             row.map { |cell|
-               color = colors[(cell / (100.0 / colors.length)).to_i]
-               "\e[48;5;#{color}m#{str}\e[0m"
-             }.join
-           }.join("\n")
+  terminal.map { |row|
+    row.map { |cell|
+      color = colors[(cell / (100.0 / colors.length)).to_i]
+      "\e[48;5;#{color}m#{str}\e[0m"
+    }.join
+  }.join("\n")
+end
+
+def main
+  terminal = generate_array
+  terminal = update_array(terminal)
+  string = colorize(terminal)
   puts string
 end
 
