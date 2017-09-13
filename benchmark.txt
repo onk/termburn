@@ -1,0 +1,152 @@
+                          | require "io/console"
+                          | require "curses"
+                          | 
+                          | COLORS = [
+                          |   16,  # 0,0,0
+                          |   52,  # 1,0,0
+                          |   88,  # 2,0,0
+                          |   124, # 3,0,0
+                          |   160, # 4,0,0
+                          |   196, # 5,0,0
+                          |   202, # 5,1,0
+                          |   208, # 5,2,0
+                          |   214, # 5,3,0
+                          |   220, # 5,4,0
+                          |   226, # 5,5,0
+                          |   231, # 5,5,5
+                          | ]
+                          | COLOR_HASH = (0..99).map {|c| [c, COLORS[(c / (100.0 / COLORS.length)).to_i]] }.to_h
+                          | STRING = " "
+                          | 
+                          | # 下段にランダムに数字を入れます
+                          | # 上の段に下3個の平均を入れます
+                          | # さら上の段に下4個の平均を入れます
+                          | # 数字によって色づけをします
+                          | # 下段の数字を変えます
+                          | # 細かくします
+                          | # もっと細かくします
+                          | # ノイズを足します
+                          | 
+                          | def generate_array
+                          |   Kernel.srand ARGV[0].to_i if ARGV[0]
+                          | 
+                          |   window_height, window_width = IO.console.winsize # [height, width]
+                          |   # 一番下の行は内部的にだけ持ちたいので +1 行作る
+                          |   terminal = Array.new(window_height + 1) { Array.new(window_width) }
+                          | 
+                          |   # 下段にランダムに数字を入れます
+                          |   last_row = terminal[-1]
+                          |   last_row.fill { rand(100) }
+                          | 
+                          |   terminal
+                          | end
+                          | 
+                          | def update_last_row(terminal)
+                          |   # 下段の数字を変えます
+                          |   last_row = terminal[-1]
+  6.1ms +    4.8ms (   1) |   last_row.fill { |i|
+  4.9ms +    4.0ms ( 8471) |     (last_row[i] + rand(-2..2)).clamp(0, 99)
+                          |   }
+                          |   terminal
+                          | end
+                          | 
+                          | def update_array(terminal)
+                          |   window_height = terminal.length
+                          |   window_width  = terminal[0].length
+                          | 
+                          |   # 上の段に下3個の平均を入れます
+                          |   last_row = terminal[-1]
+                          |   next_row = terminal[-2]
+ 11.6ms +    8.9ms (   1) |   next_row.fill { |i|
+                          |     v = case i
+  0.7ms +    0.6ms ( 1415) |         when 0
+                          |           (last_row[i] + last_row[i+1]) / 2
+  0.7ms +    0.5ms ( 1414) |         when window_width - 1
+                          |           (last_row[i-1] + last_row[i]) / 2
+                          |         else
+                          |           (last_row[i-1] + last_row[i] + last_row[i+1]) / 3
+                          |         end
+                          |     # ノイズを足します
+  6.9ms +    5.5ms ( 8489) |     (v + rand(-3..3)).clamp(0, 99)
+                          |   }
+                          | 
+                          |   # さら上の段に下4個の平均を入れます
+ 2275.6ms +  1754.7ms (   1) |   (window_height - 2).times do |i|
+                          |     row = terminal[window_height - (3 + i)]
+                          |     row_1 = terminal[window_height - (2 + i)]
+                          |     row_2 = terminal[window_height - (1 + i)]
+ 2275.2ms +  1754.6ms ( 262) |     row.fill { |j|
+                          |       v = case j
+ 132.6ms +  114.4ms ( 370730) |           when 0
+                          |             (row_1[j] + row_1[j+1] + row_2[j]) / 3
+ 132.1ms +  111.6ms ( 370468) |           when window_width - 1
+                          |             (row_1[j-1] + row_1[j] + row_2[j]) / 3
+                          |           else
+                          |             (row_1[j-1] + row_1[j] + row_1[j+1] + row_2[j]) / 4
+                          |           end
+                          |       # ノイズを足します
+ 1342.6ms +  1080.9ms ( 2167903) |       (v + rand(-3..3)).clamp(0, 99)
+                          |     }
+                          |   end
+                          |   terminal
+                          | end
+                          | 
+                          | def inner_main_loop(terminal)
+  6.1ms +    4.8ms (   1) |   terminal = update_last_row(terminal)
+ 2287.2ms +  1763.6ms (   1) |   terminal = update_array(terminal)
+ 921.4ms +  655.2ms (   2) |   terminal.each_with_index { |row, i|
+                          |     break if i == terminal.length - 1 # 最終行はスキップ
+ 921.1ms +  655.1ms ( 263) |     row.each { |cell|
+ 609.5ms +  439.4ms ( 744290) |       Curses.attron(Curses.color_pair(COLOR_HASH[cell])) {
+ 167.2ms +  108.2ms ( 372145) |         Curses.addstr(STRING)
+                          |       }
+                          |     }
+                          |   }
+ 228.3ms +    3.9ms (   1) |   Curses.refresh
+  0.0ms +  154.5ms (   1) |   sleep 0.15
+  2.3ms +    0.0ms (   1) |   Curses.clear
+                          | end
+                          | 
+                          | def main
+                          |   Curses.init_screen
+                          |   Curses.start_color
+                          | 
+                          |   COLORS.each { |color| Curses.init_pair(color, color, color) }
+                          | 
+                          |   terminal = generate_array
+                          |   if ENV["BENCHMARK"]
+                          |     require "rblineprof"
+                          |     profile = lineprof(/./) do
+  0.1ms +    1.3ms (   1) |       sleep 0.001
+ 3445.4ms +  2582.1ms (   1) |       inner_main_loop(terminal)
+                          |     end
+                          |   else
+                          |     loop {
+                          |       inner_main_loop(terminal)
+                          |     }
+                          |   end
+                          | ensure
+                          |   Curses.close_screen
+                          | 
+                          |   if ENV["BENCHMARK"]
+                          |     file = profile.keys.first
+                          | 
+                          |     File.readlines(file).each_with_index do |line, num|
+                          |       wall, cpu, calls, allocations = profile[file][num + 1]
+                          | 
+                          |       if wall > 0 || cpu > 0 || calls > 0
+                          |         printf(
+                          |           "% 5.1fms + % 6.1fms (% 4d) | %s",
+                          |           cpu / 1000.0,
+                          |           (wall - cpu) / 1000.0,
+                          |           calls,
+                          |           line
+                          |         )
+                          |       else
+                          |         printf "                          | %s", line
+                          |       end
+                          |     end
+                          |   end
+                          | end
+                          | 
+                          | main
