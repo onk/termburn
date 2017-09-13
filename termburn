@@ -92,6 +92,22 @@ def update_array(terminal)
   terminal
 end
 
+def inner_main_loop(terminal)
+  terminal = update_last_row(terminal)
+  terminal = update_array(terminal)
+  terminal.each_with_index { |row, i|
+    break if i == terminal.length - 1 # 最終行はスキップ
+    row.each { |cell|
+      Curses.attron(Curses.color_pair(COLOR_HASH[cell])) {
+        Curses.addstr(STRING)
+      }
+    }
+  }
+  Curses.refresh
+  sleep 0.15
+  Curses.clear
+end
+
 def main
   Curses.init_screen
   Curses.start_color
@@ -100,19 +116,7 @@ def main
 
   terminal = generate_array
   loop {
-    terminal = update_last_row(terminal)
-    terminal = update_array(terminal)
-    terminal.each_with_index { |row, i|
-      break if i == terminal.length - 1 # 最終行はスキップ
-      row.each { |cell|
-        Curses.attron(Curses.color_pair(COLOR_HASH[cell])) {
-          Curses.addstr(STRING)
-        }
-      }
-    }
-    Curses.refresh
-    sleep 0.15
-    Curses.clear
+    inner_main_loop(terminal)
   }
 ensure
   Curses.close_screen
