@@ -31,7 +31,8 @@ def generate_array
   Kernel.srand ARGV[0].to_i if ARGV[0]
 
   window_height, window_width = IO.console.winsize # [height, width]
-  terminal = Array.new(window_height) { Array.new(window_width) }
+  # 一番下の行は内部的にだけ持ちたいので +1 行作る
+  terminal = Array.new(window_height + 1) { Array.new(window_width) }
 
   # 下段にランダムに数字を入れます
   last_row = terminal[-1]
@@ -110,7 +111,8 @@ def main
     terminal = update_last_row(terminal)
     terminal = update_array(terminal)
     colorized_terminal = colorize(terminal)
-    colorized_terminal.each { |row|
+    colorized_terminal.each_with_index { |row, i|
+      break if i == terminal.length - 1 # 最終行はスキップ
       row.each { |cell|
         Curses.attron(Curses.color_pair(cell)) {
           Curses.addstr(STRING)
