@@ -16,7 +16,20 @@ def main
   # 下段にランダムに数字を入れます
   last_row = terminal[-1]
   last_row.fill { rand(100) }
-  p terminal[-1]
+
+  # 上の段に下3個の平均を入れます
+  next_row = terminal[-2]
+  next_row.fill { |i|
+    case i
+    when 0
+      (last_row[i] + last_row[i+1]) / 2
+    when window_width - 1
+      (last_row[i-1] + last_row[i]) / 2
+    else
+      (last_row[i-1] + last_row[i] + last_row[i+1]) / 3
+    end
+  }
+  p next_row
 end
 
 main
